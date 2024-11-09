@@ -8,7 +8,9 @@ enum OddEven {
 }
 
 app.get("/", async (c) => {
-  return c.json({ message: "/play make req and send raw json use the key 'number' and provide random number" })
+  return c.json({
+    message: "Send a POST request to '/play' with a JSON payload containing the key 'number'. Provide a positive integer, and the server will respond with whether the sum of your number and a randomly generated number is odd or even."
+  })
 })
 
 interface Payload {
@@ -23,19 +25,21 @@ app.post("/play", async (c) => {
     return c.json({ error: "Invalid JSON input" }, { status: 400 })
   }
 
-  if (!data) {
-    return c.json({ error: "Number not provided or invalid" }, { status: 400 })
+  // Validate the number field
+  if (typeof data.number !== 'number' || isNaN(data.number) || data.number <= 0 || !Number.isInteger(data.number)) {
+    return c.json({ error: "Invalid input: 'number' must be a positive integer" }, { status: 400 })
   }
 
   const randomNumber = Math.floor(Math.random() * 100) + 1
-  if (data.number <= 0) {
-    return c.json({ error: "Negative number or 0 not allowed" }, { status: 400 })
-  }
-  if (randomNumber % 2 === 0) {
-    return c.json({ result: OddEven.EVEN }, { status: 200 })
-  } else {
-    return c.json({ result: OddEven.ODD }, { status: 200 })
-  }
+  const sum = data.number + randomNumber
+  const isEven = sum % 2 === 0
+
+  return c.json({
+    yourNumber: data.number,
+    randomNumber: randomNumber,
+    sum: sum,
+    result: isEven ? OddEven.EVEN : OddEven.ODD
+  })
 })
 
 export default app
