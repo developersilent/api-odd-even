@@ -1,4 +1,4 @@
-import { Hono } from 'hono'
+import {Hono} from 'hono'
 
 const app = new Hono()
 
@@ -20,29 +20,61 @@ app.get("/", async (c) => {
 
 interface Payload {
     number: number,
-    userIsWhat: "odd" | "even"
+    playAs: "odd" | "even"
 }
+
 let tempWin = 0
 app.post("/play", async (c) => {
     let data: Payload
     try {
         data = await c.req.json()
     } catch (error) {
-        return c.json({ error: "Invalid JSON input" }, { status: 400 })
+        return c.json({error: "Invalid JSON input"}, {status: 400})
     }
 
     // Validate the number field for user input between 1 and 10
     if (typeof data.number !== 'number' || isNaN(data.number) || data.number < 1 || data.number > 10 || !Number.isInteger(data.number)) {
-        return c.json({ error: "Invalid input: 'number' must be an integer between 1 and 10" }, { status: 400 })
+        return c.json({error: "Invalid input: 'number' must be an integer between 1 and 10"}, {status: 400})
     }
 
-    if (data.userIsWhat !== "odd" && data.userIsWhat !== "even") {
-        return c.json({ error: "Invalid input: 'userIsWhat'" }, { status: 400 })
+    if (data.playAs !== "odd" && data.playAs !== "even") {
+        return c.json({error: "Invalid input: 'playAs'"}, {status: 400})
     }
-
     const randomNumber = Math.floor(Math.random() * 10) + 1
-    if (data.userIsWhat === OddEven.ODD) {
-        while (randomNumber !== data.number){
+
+
+    if (data.playAs === OddEven.EVEN) {
+        while (randomNumber !== data.number) {
+            evenSum += randomNumber + data.number
+            computerRole = OddEven.ODD
+            tempWin++
+            if (tempWin === 3) {
+                tempWin = 0
+                return c.json({
+                    Backend: computerRole,
+                    backendChose: randomNumber,
+                    userChose: data.number,
+                    userRole: data.playAs,
+                    evenSum: evenSum,
+                    winCount: 3,
+                    message: `You, win best of 3`
+                }, {status: 200})
+            }
+            return c.json({
+                Backend: computerRole,
+                backendChose: randomNumber,
+                userChose: data.number,
+                userRole: data.playAs,
+                evenSum: evenSum,
+                bestOf3: tempWin,
+            }, {status: 200})
+        }
+        tempWin = 0
+        evenSum = 0
+    }
+
+    if (data.playAs === OddEven.ODD) {
+        while (randomNumber !== data.number) {
             oddSum += randomNumber + data.number
             computerRole = OddEven.EVEN
             tempWin++
@@ -52,58 +84,31 @@ app.post("/play", async (c) => {
                     Backend: computerRole,
                     backendChose: randomNumber,
                     userChose: data.number,
-                    userRole: data.userIsWhat,
+                    userRole: data.playAs,
                     oddSum: oddSum,
                     winCount: 3,
                     message: "You win, best of 3"
-                }, { status: 200 })
+                }, {status: 200})
             }
             return c.json({
                 Backend: computerRole,
                 backendChose: randomNumber,
                 userChose: data.number,
-                userRole: data.userIsWhat,
+                userRole: data.playAs,
                 oddSum: oddSum,
-                tempWin: tempWin,
-            }, { status: 200 })
+                bestOf3: tempWin,
+            }, {status: 200})
         }
         tempWin = 0
+        oddSum = 0
     }
 
-    if (data.userIsWhat === OddEven.EVEN) {
-        while (randomNumber !== data.number){
-            oddSum += randomNumber + data.number
-            computerRole = OddEven.ODD
-            tempWin++
-            if (tempWin === 3) {
-                tempWin = 0
-                return c.json({
-                    Backend: computerRole,
-                    backendChose: randomNumber,
-                    userChose: data.number,
-                    userRole: data.userIsWhat,
-                    oddSum: oddSum,
-                    winCount: 3,
-                    message: "You win, best of 3"
-                }, { status: 200 })
-            }
-            return c.json({
-                Backend: computerRole,
-                backendChose: randomNumber,
-                userChose: data.number,
-                userRole: data.userIsWhat,
-                oddSum: oddSum,
-                tempWin: tempWin,
-            }, { status: 200 })
-        }
-        tempWin = 0
-    }
     return c.json(({
         Backend: computerRole,
         backendChose: randomNumber,
         userChose: data.number,
-        userRole: data.userIsWhat,
-        message: data.userIsWhat === OddEven.ODD ? "Now even turn" : "Now odd turn",
+        userRole: data.playAs,
+        message: "Change the condition in frontend"
     }))
 })
 
