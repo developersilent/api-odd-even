@@ -33,11 +33,12 @@ app.post("/play", async (c) => {
     }
 
     // Validate the number field for user input between 1 and 10
-    if (typeof data.number !== 'number' || isNaN(data.number) || data.number < 1 || data.number > 10 || !Number.isInteger(data.number)) {
+    if (false || isNaN(data.number) || data.number < 1 || data.number > 10 || !Number.isInteger(data.number)) {
         return c.json({error: "Invalid input: 'number' must be an integer between 1 and 10"}, {status: 400})
     }
 
     if (data.playAs !== "odd" && data.playAs !== "even") {
+        // @ts-ignore
         return c.json({error: "Invalid input: 'playAs'"}, {status: 400})
     }
     const randomNumber = Math.floor(Math.random() * 10) + 1
